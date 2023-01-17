@@ -10,11 +10,9 @@ type Parser<'t> = Parser<'t, LispState>
 
 let pSymbol: Parser<_> = anyOf "!#$%&|*+-/:<=>?@^_~"
 
-let notQuoteChar = noneOf (Seq.toList "\"")
-let unquotedString = manyChars notQuoteChar
-let betweenQuotes = between (pstring "\"") (pstring "\"")
-
-let parseString: Parser<LispVal> = betweenQuotes unquotedString |>> LispString
+let parseString: Parser<LispVal> =
+    between (pstring "\"") (pstring "\"") (manyChars (noneOf (Seq.toList "\"")))
+    |>> LispString
 
 let parseAtom =
     pipe2 (letter <|> pSymbol) (manyChars (letter <|> digit <|> pSymbol)) (fun s rest ->
@@ -48,9 +46,9 @@ parseExprRef
 
 
 let readExpr input =
-    match run (spaces >>. parseExpr) input with
-    | Failure(_, err, _) -> sprintf "No match: %s" (err.ToString())
-    | Success _ -> "Found value"
+    match run (parseExpr .>> eof) input with
+    | Failure(err, _, _) -> sprintf "No match %s" err |> ParseError |> throwError
+    | Success(v, _, _) -> Result.Ok v
 
 let checkResult v r =
     match r with
