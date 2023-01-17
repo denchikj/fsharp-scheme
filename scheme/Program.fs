@@ -12,11 +12,6 @@ let main argv =
     if argv.Length = 0 then
         runRepl ()
     else
-        let result =
-            argv |> Array.tryHead |> Option.defaultValue "" |> readExpr |> Result.bind eval
+        argv |> Array.tryHead |> Option.defaultValue "" |> runOne
 
-        match result with
-        | Ok v -> printfn "%s" (v.ToString())
-        | Error e -> printfn "error: %s" (e.ToString())
-
-    0
+    0 // return an integer exit code
