@@ -10,8 +10,7 @@ let ``test hello`` () = 1 + 1 |> should equal 2
 [<EntryPoint>]
 let main argv =
     if argv.Length = 0 then
-        runRepl ()
+        runRepl()
     else
-        argv |> Array.tryHead |> Option.defaultValue "" |> runOne
-
-    0 // return an integer exit code
+        argv |> List.ofArray |> runOne 
+    0
